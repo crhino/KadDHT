@@ -30,3 +30,28 @@ func TestXor(t *testing.T) {
         t.Errorf("8 XOR 9 == 1, but xor(a, b) returns %v.", c[0])
     }
 }
+
+func TestCommonPrefix(t *testing.T) {
+    a := new(kadId)
+    b := new(kadId)
+
+    a[0] = 9
+    b[0] = 8
+
+    bit := commonPrefix(a, b)
+    // a = 0b00001001, b = 0b00001000, thus commonPrefix should return bit 7.
+    if bit != 7 {
+        t.Errorf("The common prefix of a and b should be bit 7, but returned %v.", bit)
+    }
+
+    a[0] = 8
+    b[0] = 8
+    a[5] = 9
+    b[5] = 8
+
+    bit = commonPrefix(a, b)
+    // a = 0b00001001, b = 0b00001000 of the 6th byte, thus commonPrefix should return bit == (5*8 + 7) == 47.
+    if bit != 47 {
+        t.Errorf("The common prefix of a and b should be bit 47, but returned %v.", bit)
+    }
+}
