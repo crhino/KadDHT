@@ -24,28 +24,28 @@ type Config struct {
 
 type Node struct {
     addr net.UDPAddr
-    id string
+    id kadId
 }
 
 type DHT struct {
     config Config
     Node *Node
     conn *net.UDPConn
-
+    routing *kTree
 }
 
 func (dht *DHT) Ping(node *Node) error {
     return ErrorNotImplemented
 }
 
-func (dht *DHT) Store(node *Node, key, value []byte) error  {
+func (dht *DHT) Store(node *Node, key kadId, value []byte) error  {
     return ErrorNotImplemented
 }
 
-func (dht *DHT) Find_Node(key []byte) ([]Node, error) {
+func (dht *DHT) Find_Node(key kadId) ([]Node, error) {
     return nil, ErrorNotImplemented
 }
 
-func (dht *DHT) Find_Value(key []byte) ([]byte, []Node, error) {
+func (dht *DHT) Find_Value(key kadId) ([]byte, []Node, error) {
     return nil, nil, ErrorNotImplemented
 }
