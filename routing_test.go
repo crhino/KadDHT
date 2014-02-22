@@ -8,7 +8,7 @@ package kademlia
 
 import (
     "testing"
-    "fmt"
+    //"fmt"
 )
 
 func TestTreeInit(t *testing.T) {
@@ -50,8 +50,6 @@ func TestTreeAddAndFind(t *testing.T) {
     node := &Node{id: *nid}
     ourId := new(kadId)
     ourId[5] = 9
-    fmt.Printf("nid: %v and ourId: %v\n", nid, ourId)
-    fmt.Printf("common prefix of ID's is %v.\n", commonPrefix(nid, ourId))
     tree, err := newKTree(20, ourId)
     if err != nil {
         t.Errorf("err is %v, and tree is %v.", err, tree)
@@ -59,5 +57,12 @@ func TestTreeAddAndFind(t *testing.T) {
     err = tree.add(node)
     if err != nil {
         t.Errorf("err of tree.add(node) should be nil, but is %v", err)
+    }
+    findNode, err := tree.find(&node.id)
+    if err != nil {
+        t.Errorf("tree.find(node.id) returned an error: %v.", err)
+    }
+    if node != findNode {
+        t.Errorf("node: %v != findNode: %v.", node, findNode)
     }
 }

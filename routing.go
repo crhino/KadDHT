@@ -6,7 +6,7 @@ package kademlia
 
 
 import (
-
+    "bytes"
 )
 
 type kNode struct {
@@ -92,7 +92,16 @@ func (t *kTree) add(node *Node) error {
 }
 
 // find returns a ptr to the node with kadId == key, or an error if not found.
-func (t *kTree) find(id, key *kadId) (*Node, error) {
-    //prefix := commonPrefix(id, key)
-    return nil, ErrorNotImplemented
+func (t *kTree) find(key *kadId) (*Node, error) {
+    prefix := commonPrefix(t.id, key)
+    node, err := t.tree.search(prefix)
+    if err != nil {
+        return nil, err
+    }
+    for i := range node.bucket {
+        if bytes.Equal(node.bucket[i].id[:], key[:]) { //Better way to do this?
+            return node.bucket[i], nil
+        }
+    }
+    return nil, ErrorNotFound
 }
