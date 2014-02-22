@@ -50,7 +50,8 @@ func TestCommonPrefix(t *testing.T) {
     b[5] = 8
 
     bit = commonPrefix(a, b)
-    // a = 0b00001001, b = 0b00001000 of the 6th byte, thus commonPrefix should return bit == (5*8 + 7) == 47.
+    // a = 0b00001001, b = 0b00001000 of the 6th byte, 
+    // thus commonPrefix should return bit == (5*8 + 7) == 47.
     if bit != 47 {
         t.Errorf("The common prefix of a and b should be bit 47, but returned %v.", bit)
     }

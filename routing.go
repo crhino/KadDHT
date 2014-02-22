@@ -10,44 +10,85 @@ import (
 )
 
 type kNode struct {
-    prefix int // Number of bits in common with node ID.
+    // A kNode owns the ID range of ids with common pLow bits to common pHigh bits
+    pLow int // Low number of bits in common with node ID.
+    pHigh int // High number of bits in common with node ID.
     left *kNode
     right *kNode
     bucket []*Node // bucket is nil unless the kNode is a leaf node.
 }
 
-func newKNode(p int) *kNode {
+func newKNode(pL, pH int) *kNode {
     return &kNode{
-                    prefix: p,
+                    pLow: pL,
+                    pHigh: pH,
                     bucket: make([]*Node, 0, 20),
                  }
 }
 
 type kTree struct {
     k int
+    id *kadId
     tree *kNode
 }
 
-func newKTree(k int) (*kTree, error) {
+func newKTree(_k int, _id *kadId) (*kTree, error) {
     tree := &kTree{
-                    k: 20,
-                    tree: newKNode(0),
+                    k: _k,
+                    id: _id,
+                    tree: newKNode(0, 159),
                  }
     return tree, nil
 }
 
 func (node *kNode) leaf() bool {
-    return node.bucket == nil
+    return node.bucket != nil
 }
 
-// search is a recursive function that will find the kNode in which
-// the p == t.prefix.
+func (node *kNode) belongs(prefix int) bool {
+    return node.pLow <= prefix && node.pHigh >= prefix
+}
+
+// Adds a Node to the kNode. If len(n.bucket) == 20, the Node is
+// pushed down into a subtree of the kNode.
+func (n *kNode) add(node *Node) {
+    n.bucket = append(n.bucket, node)
+    // TODO: Push node down into subtrees if bucket is full
+}
+
+// search is a recursive function that will find the kNode with the
+// closest prefix to p.
 func (t *kNode) search(p int) (*kNode, error) {
-    return nil, ErrorNotImplemented
+    if t.belongs(p) {
+        return t, nil
+    }
+    if t.leaf() {
+        return nil, ErrorNotFound
+    }
+
+
+    pNode, err := t.right.search(p)
+    if err != nil {
+        pNode, err = t.left.search(p)
+        if err != nil {
+            return nil, err
+        }
+    }
+    return pNode, nil
 }
 
 func (t *kTree) add(node *Node) error {
-    return ErrorNotImplemented
+    p := commonPrefix(t.id, &(node.id))
+    if p == 160 {
+        // DHT tried to add itself to the routing table.
+        return nil
+    }
+    leaf, err := t.tree.search(p)
+    if err != nil {
+        return err
+    }
+    leaf.add(node)
+    return nil
 }
 
 // find returns a ptr to the node with kadId == key, or an error if not found.

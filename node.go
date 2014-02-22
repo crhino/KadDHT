@@ -13,7 +13,8 @@ import (
 )
 
 var (
-    ErrorNotImplemented = errors.New("function not implemented.")
+    ErrorNotImplemented = errors.New("function not implemented")
+    ErrorNotFound       = errors.New("Could not find value")
 )
 
 type Config struct {
