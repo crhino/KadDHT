@@ -23,7 +23,7 @@ func xor(a, b *kadId) (c *kadId) {
 
 // Finds the first bit that differs between a and b,
 // and returns that bit number.
-func commonPrefix(a, b *kadId) int {
+func commonPrefix(a, b *kadId) uint {
     i := 0
     for ; i < 20; i++ {
         if a[i] != b[i] {
@@ -42,5 +42,15 @@ func commonPrefix(a, b *kadId) int {
         xor<<=1
         bit++
     }
-    return i*8 + bit
+    return uint(i*8 + bit)
+}
+
+// Returns the ith bit of a kadId.
+func (id *kadId) bit(i uint) uint8 {
+    bit := i % 8
+    byt := (i-bit)/8
+    byte_id := id[byt]
+    byte_id<<=bit
+    byte_id>>=7
+    return byte_id & 1
 }

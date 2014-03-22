@@ -56,3 +56,20 @@ func TestCommonPrefix(t *testing.T) {
         t.Errorf("The common prefix of a and b should be bit 47, but returned %v.", bit)
     }
 }
+
+func TestBit(t *testing.T) {
+    a := new(kadId)
+    bit := a.bit(10)
+    if bit != 0 {
+        t.Errorf("The 10th bit of the kadId should be 0, but is %v", bit)
+    }
+    bit = a.bit(159)
+    if bit != 0 {
+        t.Errorf("The 159th bit of the kadId should be 0, but is %v", bit)
+    }
+    a[3] = 9
+    bit = a.bit(28)
+    if bit != 1 {
+        t.Errorf("The 28th bit of the kadId should be 1, but is %v", bit)
+    }
+}
