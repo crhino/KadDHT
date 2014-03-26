@@ -110,7 +110,7 @@ func TestKNearestNodes(t *testing.T) {
     nodes := make([]*Node, 30, 30)
     for i := range nodes {
         nid := new(kadId)
-        nid[0] = byte(i)
+        nid[0] = byte(30-i)
         if i == 0 {
             nid[0] = 255 // prefix == 0
         }

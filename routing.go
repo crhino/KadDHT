@@ -139,7 +139,7 @@ func (t *kTree) find(key *kadId) (*Node, error) {
 func (t *kTree) k_nearest_nodes(key *kadId) ([]*Node) {
     prefix := commonPrefix(t.id, key)
     nearest := make([]*Node, t.k)
-    t.tree.k_nearest_nodes(t.k, nearest, prefix)
+    t.tree.k_nearest_nodes(t.k, key, nearest, prefix)
     return nearest
     // TODO: What if there are less than k nodes in routing table?
     // Find commonPrefix, look at that kNode.
@@ -159,19 +159,27 @@ func find_nil_index(nearest *[]*Node) int {
     return len(*nearest)
 }
 
-func (root *kNode) k_nearest_nodes(k int, nearest []*Node, prefix uint) []*Node {
+func (root *kNode) k_nearest_nodes(k int, key *kadId, nearest []*Node, prefix uint) []*Node {
     if nearest[k-1] != nil { // Found k nearest nodes.
-        return nearest
+        return nil
     }
     if !root.leaf() {
         var belong []*Node
         var non_belong []*Node
-        if root.left.belongs(prefix) {
-            belong = root.left.k_nearest_nodes(k, nearest, prefix)
-            non_belong = root.right.k_nearest_nodes(k, nearest, prefix)
+        abs_left := root.left.pLow - prefix
+        if abs_left < 0 {
+            abs_left = -abs_left
+        }
+        abs_right := root.right.pLow - prefix
+        if abs_right < 0 {
+            abs_right = -abs_right
+        }
+        if abs_left < abs_right {
+            belong = root.left.k_nearest_nodes(k, key, nearest, prefix)
+            non_belong = root.right.k_nearest_nodes(k, key, nearest, prefix)
         } else {
-            belong = root.right.k_nearest_nodes(k, nearest, prefix)
-            non_belong = root.left.k_nearest_nodes(k, nearest, prefix)
+            belong = root.right.k_nearest_nodes(k, key, nearest, prefix)
+            non_belong = root.left.k_nearest_nodes(k, key, nearest, prefix)
         }
         start := find_nil_index(&nearest)
         remainder := k - start
@@ -183,8 +191,11 @@ func (root *kNode) k_nearest_nodes(k int, nearest []*Node, prefix uint) []*Node 
                 continue
             }
             for j, m := range nodes_to_add {
-                if m == nil || n.id.lessThan(&m.id) {
+                xor_m := xor(&m.id, key)
+                xor_n := xor(&n.id, key)
+                if xor_n.lessThan(xor_m) {
                     nodes_to_add[j] = n
+                    break
                 }
             }
         }
