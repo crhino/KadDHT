@@ -54,3 +54,16 @@ func (id *kadId) bit(i uint) uint8 {
     byte_id>>=7
     return byte_id & 1
 }
+
+func (id *kadId) lessThan(greater *kadId) bool {
+    for i := 0; i < 20; i++ {
+        if greater[i] > id[i] {
+            // We know greater is indeed greater since we start with
+            // most significant bytes.
+            return true
+        } else if greater[i] != id[i] { // If both are equal, continue checking.
+            return false
+        }
+    }
+    return false // Ids are equal
+}

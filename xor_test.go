@@ -73,3 +73,23 @@ func TestBit(t *testing.T) {
         t.Errorf("The 28th bit of the kadId should be 1, but is %v", bit)
     }
 }
+
+func TestCompareKadIds(t *testing.T) {
+    a := new(kadId)
+    b := new(kadId)
+    zero_val := xor(a, b)
+    a[19] = 9
+    b[19] = 8
+    one_val := xor(a, b)
+    less := zero_val.lessThan(one_val)
+   if !less {
+        t.Errorf("Distance of zero should be less than distance of one.")
+    }
+
+    a[10] = 45
+    more_val := xor(a,b)
+    less = one_val.lessThan(more_val)
+    if !less {
+        t.Errorf("Distance of one should be less than %v.", *more_val)
+    }
+}

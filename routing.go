@@ -7,6 +7,7 @@ package kademlia
 
 import (
     "bytes"
+//    "fmt"
 )
 
 // A Node in the routing table.
@@ -20,11 +21,11 @@ type kNode struct {
     overflow []*Node // Overflow bucket to hold nodes that should be refreshed.
 }
 
-func newKNode(pL, pH uint) *kNode {
+func newKNode(k int, pL, pH uint) *kNode {
     return &kNode{
                     pLow: pL,
                     pHigh: pH,
-                    bucket: make([]*Node, 0, 20),
+                    bucket: make([]*Node, 0, k),
                     overflow: make([]*Node, 0, 0),
                  }
 }
@@ -40,7 +41,7 @@ func newKTree(_k int, _id *kadId) (*kTree, error) {
     tree := &kTree{
                     k: _k,
                     id: _id,
-                    tree: newKNode(0, 159),
+                    tree: newKNode(_k, 0, 159),
                  }
     return tree, nil
 }
@@ -67,8 +68,8 @@ func (n *kNode) add(k int, own_id *kadId, node *Node) {
         return
     }
     // TODO: Push node down into subtrees if bucket is full
-    pL_node := newKNode(n.pLow, n.pLow)
-    pH_node := newKNode(n.pLow+1, n.pHigh)
+    pL_node := newKNode(k, n.pLow, n.pLow)
+    pH_node := newKNode(k, n.pLow+1, n.pHigh)
     for _, n := range n.bucket {
         p := commonPrefix(own_id, &n.id)
         if pL_node.belongs(p) {
@@ -133,6 +134,68 @@ func (t *kTree) find(key *kadId) (*Node, error) {
     return nil, ErrorNotFound
 }
 
+// Returns the k nearest nodes to the given key within the
+// routing table.
 func (t *kTree) k_nearest_nodes(key *kadId) ([]*Node) {
-    return nil
+    prefix := commonPrefix(t.id, key)
+    nearest := make([]*Node, t.k)
+    t.tree.k_nearest_nodes(t.k, nearest, prefix)
+    return nearest
+    // TODO: What if there are less than k nodes in routing table?
+    // Find commonPrefix, look at that kNode.
+    // if k nodes, return them.
+    // Less than k nodes: collect commonPrefix+1 and -1 nodes.
+    // Determine distances and collect remainder of k nodes.
+    // Iterate on last two steps until either all nodes considered or
+    // k nodes found.
+}
+
+func find_nil_index(nearest *[]*Node) int {
+    for i, n := range *nearest {
+        if n == nil {
+            return i
+        }
+    }
+    return len(*nearest)
+}
+
+func (root *kNode) k_nearest_nodes(k int, nearest []*Node, prefix uint) []*Node {
+    if nearest[k-1] != nil { // Found k nearest nodes.
+        return nearest
+    }
+    if !root.leaf() {
+        var belong []*Node
+        var non_belong []*Node
+        if root.left.belongs(prefix) {
+            belong = root.left.k_nearest_nodes(k, nearest, prefix)
+            non_belong = root.right.k_nearest_nodes(k, nearest, prefix)
+        } else {
+            belong = root.right.k_nearest_nodes(k, nearest, prefix)
+            non_belong = root.left.k_nearest_nodes(k, nearest, prefix)
+        }
+        start := find_nil_index(&nearest)
+        remainder := k - start
+        nodes := append(belong, non_belong...)
+        nodes_to_add := make([]*Node, 0, remainder)
+        for _, n := range nodes {
+            if len(nodes_to_add) < remainder {
+                nodes_to_add = append(nodes_to_add, n)
+                continue
+            }
+            for j, m := range nodes_to_add {
+                if m == nil || n.id.lessThan(&m.id) {
+                    nodes_to_add[j] = n
+                }
+            }
+        }
+        copy(nearest[start:], nodes_to_add)
+        return nil
+    }
+    // Found the leaf the key belongs in, grab the entire bucket.
+    // TODO: Deal with the overflow bucket as well.
+    if root.belongs(prefix) {
+        copy(nearest, root.bucket)
+        return nil
+    }
+    return root.bucket
 }

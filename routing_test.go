@@ -8,7 +8,7 @@ package kademlia
 
 import (
     "testing"
-    //"fmt"
+//    "fmt"
     "math/rand"
 )
 
@@ -111,13 +111,18 @@ func TestKNearestNodes(t *testing.T) {
     for i := range nodes {
         nid := new(kadId)
         nid[0] = byte(i)
+        if i == 0 {
+            nid[0] = 255 // prefix == 0
+        }
         nodes[i] = &Node{id: *nid}
         AddNodeTest(t, nodes[i], tree)
     }
-    lookup := new(kadId) // 0000.....00000
-    nearest := tree.k_nearest_nodes(lookup)
+    nearest := tree.k_nearest_nodes(&nodes[0].id)
     if nearest == nil {
         t.Error("k_nearest_nodes should not return nil")
+    }
+    if len(nearest) != 20 {
+        t.Errorf("Length of nearest should be 20, not %v.", len(nearest))
     }
     for i := range nearest {
         if !nodeInSlice(nodes[i], nearest) {
