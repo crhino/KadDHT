@@ -67,7 +67,6 @@ func (n *kNode) add(k int, own_id *kadId, node *Node) {
         n.overflow = append(n.overflow, node)
         return
     }
-    // TODO: Push node down into subtrees if bucket is full
     pL_node := newKNode(k, n.pLow, n.pLow)
     pH_node := newKNode(k, n.pLow+1, n.pHigh)
     for _, n := range n.bucket {
@@ -208,5 +207,5 @@ func (root *kNode) k_nearest_nodes(k int, key *kadId, nearest []*Node, prefix ui
         copy(nearest, root.bucket)
         return nil
     }
-    return root.bucket
+    return root.bucket // Leaf that doesn't own prefix.
 }
