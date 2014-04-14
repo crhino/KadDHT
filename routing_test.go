@@ -64,12 +64,12 @@ func TestTreeInit(t *testing.T) {
 func TestTreeAddAndFind(t *testing.T) {
     nid := new(kadId)
     nid[0] = 8
-    node := &Node{id: *nid}
+    node := &Node{Id: *nid}
     ourId := new(kadId)
     ourId[5] = 9
     tree := NewTreeInit(t)
     AddNodeTest(t, node, tree)
-    findNode, err := tree.find(&node.id)
+    findNode, err := tree.find(&node.Id)
     if err != nil {
         t.Errorf("tree.find(node.id) returned an error: %v.", err)
     }
@@ -84,7 +84,7 @@ func TestSplitAddAndFind(t *testing.T) {
     for i := range nodes {
         nid := new(kadId)
         nid[(i+rand.Int()) % 20] = byte(i)
-        nodes[i] = &Node{id: *nid}
+        nodes[i] = &Node{Id: *nid}
         AddNodeTest(t, nodes[i], tree)
     }
     // Tree has parent ID of 0000...00.
@@ -114,10 +114,10 @@ func TestKNearestNodes(t *testing.T) {
         if i == 0 {
             nid[0] = 255 // prefix == 0
         }
-        nodes[i] = &Node{id: *nid}
+        nodes[i] = &Node{Id: *nid}
         AddNodeTest(t, nodes[i], tree)
     }
-    nearest := tree.k_nearest_nodes(&nodes[0].id)
+    nearest := tree.k_nearest_nodes(&nodes[0].Id)
     if nearest == nil {
         t.Error("k_nearest_nodes should not return nil")
     }
@@ -126,7 +126,7 @@ func TestKNearestNodes(t *testing.T) {
     }
     for i := range nearest {
         if !nodeInSlice(nodes[i], nearest) {
-            t.Errorf("Node %v is not in the list. Id: %v", i, nodes[i].id)
+            t.Errorf("Node %v is not in the list. Id: %v", i, nodes[i].Id)
         }
     }
 }

@@ -8,6 +8,8 @@
 package kademlia
 
 import (
+    "crypto/rand"
+    "log"
 )
 
 type kadId [20]byte
@@ -66,4 +68,12 @@ func (id *kadId) lessThan(greater *kadId) bool {
         }
     }
     return false // Ids are equal
+}
+
+func randKadId() kadId {
+    var id kadId
+    if _, err := rand.Read(id[:]); err != nil {
+        log.Fatalln("randKadId() err: ", err)
+    }
+    return id
 }

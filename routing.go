@@ -70,7 +70,7 @@ func (n *kNode) add(k int, own_id *kadId, node *Node) {
     pL_node := newKNode(k, n.pLow, n.pLow)
     pH_node := newKNode(k, n.pLow+1, n.pHigh)
     for _, n := range n.bucket {
-        p := commonPrefix(own_id, &n.id)
+        p := commonPrefix(own_id, &n.Id)
         if pL_node.belongs(p) {
             pL_node.add(k, own_id, n)
         } else {
@@ -105,7 +105,7 @@ func (t *kNode) search(p uint) (*kNode, error) {
 
 // Adds the given node to the routing table.
 func (t *kTree) add(node *Node) error {
-    p := commonPrefix(t.id, &(node.id))
+    p := commonPrefix(t.id, &(node.Id))
     if p == 160 {
         // DHT tried to add itself to the routing table.
         return nil
@@ -126,7 +126,7 @@ func (t *kTree) find(key *kadId) (*Node, error) {
         return nil, err
     }
     for i := range node.bucket {
-        if bytes.Equal(node.bucket[i].id[:], key[:]) { //Better way to do this?
+        if bytes.Equal(node.bucket[i].Id[:], key[:]) { //Better way to do this?
             return node.bucket[i], nil
         }
     }
@@ -190,8 +190,8 @@ func (root *kNode) k_nearest_nodes(k int, key *kadId, nearest []*Node, prefix ui
                 continue
             }
             for j, m := range nodes_to_add {
-                xor_m := xor(&m.id, key)
-                xor_n := xor(&n.id, key)
+                xor_m := xor(&m.Id, key)
+                xor_n := xor(&n.Id, key)
                 if xor_n.lessThan(xor_m) {
                     nodes_to_add[j] = n
                     break
