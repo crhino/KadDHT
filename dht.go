@@ -21,6 +21,7 @@ const (
     KADNODE
     KADVALUE
     KADBOOTSTRAP
+    KADSTOP
 )
 
 var (
@@ -114,6 +115,17 @@ func Bootstrap_DHT(host string, port int, naddr *net.UDPAddr) (*DHT, error) {
     return dht, nil
 }
 
+func (dht *DHT) Start() error {
+    conn, err := net.ListenUDP("udp", dht.Node.Addr)
+    if err != nil {
+        log.Println("DHT Start() err: ", err)
+        return err
+    }
+    stop_chan := make(<-chan RPC)
+    go RPC_response_loop(conn, stop_chan)
+    <-stop_chan
+    return nil
+}
 
 /*
             Kademlia RPC Commands
@@ -147,11 +159,11 @@ func (dht *DHT) Find_Value(key kadId) (*[]byte, []*Node, error) {
     return nil, nil, ErrorNotImplemented
 }
 
-func (dht *DHT) lookup_closest_nodes(key kadId) []*Node {
-    return ErrorNotImplemented
+func (dht *DHT) lookup_closest_nodes(key kadId) ([]*Node, error) {
+    return nil, ErrorNotImplemented
 }
 
-
-func RPC_response_loop(/* Some channels should go here */) {
-
+// More channels should be parameters.
+func RPC_response_loop(udp_conn *net.UDPConn, stop_chan <-chan RPC) {
+    // Use net.ReadFromUDP function.
 }

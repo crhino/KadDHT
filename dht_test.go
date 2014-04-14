@@ -7,7 +7,7 @@
 package kademlia
 
 import (
-    "testing"
+//    "testing"
 )
 
 /*
