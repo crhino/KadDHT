@@ -12,6 +12,7 @@ import (
     "errors"
     "strconv"
     "log"
+    "unsafe"
 )
 
 type RPC int64
@@ -46,8 +47,9 @@ type DHT struct {
 }
 
 // Depending on the RPC, value or nodes field might be empty.
-type packet struct {
+type kad_packet struct {
     rand_id kadId // RPC's must echo back this random ID to protect against forgery.
+    send_id kadId // ID of the sending Node.
     rpc RPC
     key kadId
     value []byte
@@ -122,7 +124,7 @@ func (dht *DHT) Start() error {
         return err
     }
     stop_chan := make(<-chan RPC)
-    go RPC_response_loop(conn, stop_chan)
+    go dht.RPC_response_loop(conn, stop_chan)
     <-stop_chan
     return nil
 }
@@ -164,6 +166,39 @@ func (dht *DHT) lookup_closest_nodes(key kadId) ([]*Node, error) {
 }
 
 // More channels should be parameters.
-func RPC_response_loop(udp_conn *net.UDPConn, stop_chan <-chan RPC) {
+func (dht *DHT) RPC_response_loop(udp_conn *net.UDPConn, stop_chan <-chan RPC) {
     // Use net.ReadFromUDP function.
+    var packet *kad_packet
+    packet_size := int(unsafe.Sizeof(packet))
+    buf := make([]byte, packet_size)
+    for {
+        n, raddr, err := udp_conn.ReadFromUDP(buf)
+        if err != nil {
+            log.Println("RPC_response_loop: ReadFromUDP err: ", err)
+            continue
+        }
+        if n != packet_size {
+            log.Println("RPC_response_loop: did not read correct number of bytes (",
+                        packet_size, "), read ", n, " bytes instead.")
+            continue
+        }
+        packet = (*kad_packet)(unsafe.Pointer(&buf[0]))
+        switch packet.rpc {
+            case KADPING:
+                break
+            case KADSTORE:
+                break
+            case KADNODE:
+                break
+            case KADVALUE:
+                break
+            case KADBOOTSTRAP:
+                // Send boostrapping node all nodes closest to it's ID in order
+                // to check for duplicates.
+                node_ptrs := dht.routing.k_nearest_nodes(&packet.send_id)
+                break
+            case KADSTOP:
+                break
+        }
+    }
 }
